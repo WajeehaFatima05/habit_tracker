@@ -116,6 +116,10 @@ table {
     text-align: left;
 }
 
+tbody tr:hover td, 
+tbody tr:hover .sticky-col {
+  background-color: #f1f5f9;
+}
 th,
 td {
     padding: 16px;

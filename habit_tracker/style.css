@@ -1,0 +1,240 @@
+:root {
+    --primary: #10b981;
+    /* Emerald green */
+    --primary-light: #d1fae5;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 4px;
+}
+
+p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-bg);
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.btn-icon,
+.btn-text,
+.btn-primary {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-icon {
+    background: transparent;
+}
+
+.btn-icon:hover {
+    background: #f1f5f9;
+}
+
+.btn-text {
+    background: var(--primary-light);
+    color: #047857;
+}
+
+.week-label {
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 120px;
+    text-align: center;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th,
+td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+/* Makes the habit name column stick to the left when scrolling on mobile */
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background: var(--card-bg);
+    border-right: 1px solid var(--border);
+    text-align: left;
+    z-index: 2;
+    width: 200px;
+}
+
+th.sticky-col {
+    z-index: 3;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.day-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: block;
+    text-transform: uppercase;
+}
+
+.day-num {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.today-col {
+    background-color: var(--primary-light);
+}
+
+.habit-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.habit-name {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.streak {
+    font-size: 12px;
+    color: #f97316;
+}
+
+/* Orange */
+
+.action-btns {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    opacity: 0.6;
+}
+
+.action-btns button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.action-btns button:hover {
+    opacity: 1;
+}
+
+.check-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s;
+    background: #f1f5f9;
+    color: transparent;
+}
+
+.check-btn.checked {
+    background: var(--primary);
+    color: white;
+}
+
+.add-form {
+    display: flex;
+    gap: 10px;
+    padding: 16px;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+}
+
+#habit-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+}
+
+#habit-input:focus {
+    border-color: var(--primary);
+}
+
+.btn-primary {
+    background: var(--text-dark);
+    color: white;
+    padding: 10px 20px;
+}
+
+.btn-primary:hover {
+    background: #334155;
+}

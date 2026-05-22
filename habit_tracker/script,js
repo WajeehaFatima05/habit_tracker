@@ -1,0 +1,203 @@
+// --- State & Storage ---
+let habits = JSON.parse(localStorage.getItem('habits')) || [];
+let checkmarks = JSON.parse(localStorage.getItem('checkmarks')) || {};
+
+function saveData() {
+    localStorage.setItem('habits', JSON.stringify(habits));
+    localStorage.setItem('checkmarks', JSON.stringify(checkmarks));
+}
+
+// --- Date Math Utilities ---
+function getTodayString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function addDays(dateString, days) {
+    const [y, m, d] = dateString.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    date.setDate(date.getDate() + days);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function getStartOfWeek(dateString) {
+    const [y, m, d] = dateString.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const day = date.getDay();
+    // Set Monday as start of week
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const start = new Date(date.setDate(diff));
+    return `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+}
+
+function getDaysOfWeek(startOfWeekStr) {
+    let days = [];
+    for (let i = 0; i < 7; i++) days.push(addDays(startOfWeekStr, i));
+    return days;
+}
+
+// Format date like "Mon 16"
+function formatShortDate(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+}
+
+// --- Streak Logic ---
+function calculateStreak(habitId, todayStr) {
+    let streak = 0;
+    let currentDate = todayStr;
+
+    // If today is checked, count it
+    if (checkmarks[`${habitId}-${currentDate}`]) {
+        streak++;
+    }
+
+    // Look backward starting from yesterday
+    currentDate = addDays(todayStr, -1);
+    while (checkmarks[`${habitId}-${currentDate}`]) {
+        streak++;
+        currentDate = addDays(currentDate, -1);
+    }
+    return streak;
+}
+
+// --- UI Rendering ---
+let currentWeekStart = getStartOfWeek(getTodayString());
+const today = getTodayString();
+
+function render() {
+    const weekDays = getDaysOfWeek(currentWeekStart);
+
+    // Update Header Date
+    document.getElementById('week-display').innerText = `${formatShortDate(weekDays[0])} - ${formatShortDate(weekDays[6])}`;
+
+    // Show/Hide Empty State
+    const emptyState = document.getElementById('empty-state');
+    const tableContainer = document.getElementById('table-container');
+    if (habits.length === 0) {
+        emptyState.classList.remove('hidden');
+        tableContainer.classList.add('hidden');
+        return;
+    } else {
+        emptyState.classList.add('hidden');
+        tableContainer.classList.remove('hidden');
+    }
+
+    // Render Table Header
+    const trHead = document.getElementById('table-header');
+    let headHTML = `<th class="sticky-col">Habit</th>`;
+    weekDays.forEach(date => {
+        const isToday = date === today;
+        const dayStr = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+        const numStr = parseInt(date.split('-')[2]); // Just get the day number
+        headHTML += `<th class="${isToday ? 'today-col' : ''}">
+                   <span class="day-name">${dayStr}</span>
+                   <span class="day-num">${numStr}</span>
+                 </th>`;
+    });
+    trHead.innerHTML = headHTML;
+
+    // Render Table Body
+    const trBody = document.getElementById('table-body');
+    trBody.innerHTML = '';
+
+    habits.forEach(habit => {
+        const tr = document.createElement('tr');
+        const streak = calculateStreak(habit.id, today);
+
+        // First column: Name, Streak, Edit/Delete
+        let rowHTML = `
+      <td class="sticky-col">
+        <div class="habit-info">
+          <span class="habit-name">${habit.name}</span>
+          <span class="streak">🔥 ${streak} day${streak === 1 ? '' : 's'}</span>
+        </div>
+        <div class="action-btns">
+          <button onclick="renameHabit('${habit.id}', '${habit.name}')">✏️</button>
+          <button onclick="deleteHabit('${habit.id}')">🗑️</button>
+        </div>
+      </td>
+    `;
+
+        // 7 columns for the days
+        weekDays.forEach(date => {
+            const isToday = date === today;
+            const isChecked = checkmarks[`${habit.id}-${date}`] || false;
+            rowHTML += `
+        <td class="${isToday ? 'today-col' : ''}">
+          <button 
+            class="check-btn ${isChecked ? 'checked' : ''}" 
+            onclick="toggleCheck('${habit.id}', '${date}')">
+            ✓
+          </button>
+        </td>
+      `;
+        });
+
+        tr.innerHTML = rowHTML;
+        trBody.appendChild(tr);
+    });
+}
+
+// --- User Actions ---
+document.getElementById('add-habit-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const input = document.getElementById('habit-input');
+    const name = input.value.trim();
+    if (!name) return;
+
+    // Create a unique ID using current timestamp
+    habits.push({ id: Date.now().toString(), name: name });
+    saveData();
+    input.value = '';
+    render();
+});
+
+window.toggleCheck = function (habitId, date) {
+    const key = `${habitId}-${date}`;
+    if (checkmarks[key]) {
+        delete checkmarks[key];
+    } else {
+        checkmarks[key] = true;
+    }
+    saveData();
+    render();
+};
+
+window.deleteHabit = function (id) {
+    if (confirm('Delete this habit?')) {
+        habits = habits.filter(h => h.id !== id);
+        saveData();
+        render();
+    }
+};
+
+window.renameHabit = function (id, currentName) {
+    const newName = prompt('Rename habit:', currentName);
+    if (newName && newName.trim()) {
+        const habit = habits.find(h => h.id === id);
+        if (habit) habit.name = newName.trim();
+        saveData();
+        render();
+    }
+};
+
+// --- Navigation ---
+document.getElementById('prev-week').addEventListener('click', () => {
+    currentWeekStart = addDays(currentWeekStart, -7);
+    render();
+});
+
+document.getElementById('next-week').addEventListener('click', () => {
+    currentWeekStart = addDays(currentWeekStart, 7);
+    render();
+});
+
+document.getElementById('btn-today').addEventListener('click', () => {
+    currentWeekStart = getStartOfWeek(getTodayString());
+    render();
+});
+
+// Initial render
+render();
